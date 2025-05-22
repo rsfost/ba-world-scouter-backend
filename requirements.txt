@@ -1,0 +1,4 @@
+redis
+fastapi
+mangum
+#uvicorn # uncomment for local development
