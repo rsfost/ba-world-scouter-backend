@@ -21,12 +21,17 @@ db = redis.Redis(
 def list_worlds():
     cursor = 0
     worlds = {}
+    total = 0
+    LIMIT = 500
+
     while True:
         cursor, keys = db.scan(cursor=cursor, count=100)
         if keys:
             values = [json.loads(v) if v is not None else None for v in db.mget(keys)]
             worlds.update(dict(zip(keys, values)))
-        if cursor == 0:
+        total += len(keys)
+
+        if cursor == 0 or total >= LIMIT:
             break
     return worlds
 
