@@ -24,7 +24,7 @@ def list_worlds():
     while True:
         cursor, keys = db.scan(cursor=cursor, count=100)
         if keys:
-            values = [json.loads(v) for v in db.mget(keys)]
+            values = [json.loads(v) if v is not None else None for v in db.mget(keys)]
             worlds.update(dict(zip(keys, values)))
         if cursor == 0:
             break
