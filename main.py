@@ -12,6 +12,7 @@ db = redis.Redis(
     port=int(os.environ['REDIS_PORT']),
     username=os.environ['REDIS_USER'],
     password=os.environ['REDIS_PASSWORD'],
+    ssl=os.environ.get('REDIS_SSL'),
     decode_responses=True,
     db=0
 )
