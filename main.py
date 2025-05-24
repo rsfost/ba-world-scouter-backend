@@ -20,19 +20,23 @@ db = redis.Redis(
 @app.get("/worlds")
 def list_worlds():
     cursor = 0
-    worlds = {}
-    total = 0
-    LIMIT = 500
+    worlds = []
+    iterCount = 0
+    ITER_LIMIT = 50
 
     while True:
         cursor, keys = db.scan(cursor=cursor, count=100)
         if keys:
-            values = [json.loads(v) if v is not None else None for v in db.mget(keys)]
-            worlds.update(dict(zip(keys, values)))
-        total += len(keys)
-
-        if cursor == 0 or total >= LIMIT:
+            vals = db.mget(keys)
+            worlds.extend([
+                {'world': int(key), **json.loads(val)}
+                for key, val in zip(keys, vals)
+                if val is not None
+            ])
+        iterCount+=1
+        if cursor == 0 or iterCount >= ITER_LIMIT:
             break
+
     return worlds
 
 @app.put("/world/{world}")
