@@ -4,8 +4,13 @@ import os
 import redis
 import time
 import json
+import logging
+from datetime import datetime
 
 app = FastAPI()
+
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 REDIS_URL=os.environ['REDIS_URL']
 REDIS_SOCKET_CONNECT_TIMEOUT = float(os.environ.get("REDIS_SOCKET_CONNECT_TIMEOUT") or '0')
@@ -54,5 +59,25 @@ async def update_world(world: int, request: Request, response: Response):
     }
     db.set(world, json.dumps(redis_val), ex = 1 * 3600)
     return redis_val
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time_ms = int((time.time() - start_time) * 1000)
+
+    client_ip = request.client.host
+    method = request.method
+    path = request.url.path
+    protocol = request.scope.get("http_version", "1.1")
+    status_code = response.status_code
+
+    # Common Log Format timestamp: [day/month/year:hour:minute:second zone]
+    timestamp = datetime.now().strftime('%d/%b/%Y:%H:%M:%S %z')
+
+    log_entry = f'{client_ip} - - [{timestamp}] "{method} {path} HTTP/{protocol}" {status_code} {process_time_ms}'
+    logging.info(log_entry)
+
+    return response
 
 handler = Mangum(app)
