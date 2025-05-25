@@ -29,7 +29,7 @@ def list_worlds():
         if keys:
             vals = db.mget(keys)
             worlds.extend([
-                {'world': int(key), **json.loads(val)}
+                {'worldId': int(key), **json.loads(val)}
                 for key, val in zip(keys, vals)
                 if val is not None
             ])
