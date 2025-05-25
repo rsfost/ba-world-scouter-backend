@@ -7,14 +7,13 @@ import json
 
 app = FastAPI()
 
-db = redis.Redis(
-    host=os.environ['REDIS_HOST'],
-    port=int(os.environ['REDIS_PORT']),
-    username=os.environ['REDIS_USER'],
-    password=os.environ['REDIS_PASSWORD'],
-    ssl=os.environ.get('REDIS_SSL'),
-    decode_responses=True,
-    db=0
+REDIS_URL=os.environ['REDIS_URL']
+REDIS_SOCKET_CONNECT_TIMEOUT = float(os.environ.get("REDIS_SOCKET_CONNECT_TIMEOUT") or '0')
+REDIS_SOCKET_TIMEOUT = float(os.environ.get("REDIS_SOCKET_TIMEOUT") or '0')
+
+db = redis.from_url(REDIS_URL,
+    socket_connect_timeout=REDIS_SOCKET_CONNECT_TIMEOUT or None,
+    socket_timeout=REDIS_SOCKET_TIMEOUT or None
 )
 
 @app.get("/worlds")
