@@ -60,18 +60,24 @@ async def update_world(world: int, request: Request, response: Response):
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
-    process_time_ms = int((time.time() - start_time) * 1000)
+    duration_ms = int((time.time() - start_time) * 1000)
 
     client_ip = request.client.host
     method = request.method
     path = request.url.path
     protocol = request.scope.get("http_version", "1.1")
     status_code = response.status_code
+    content_length = response.headers.get("content-length", "-")
 
-    # Common Log Format timestamp: [day/month/year:hour:minute:second zone]
+    user_agent = request.headers.get("user-agent", "-")
+    referer = request.headers.get("referer", "-")
+
     timestamp = datetime.now().strftime('%d/%b/%Y:%H:%M:%S %z')
 
-    log_entry = f'{client_ip} - - [{timestamp}] "{method} {path} HTTP/{protocol}" {status_code} {process_time_ms}'
+    log_entry = (
+        f'{client_ip} - - [{timestamp}] "{method} {path} HTTP/{protocol}" '
+        f'{status_code} {content_length} "{referer}" "{user_agent}" {duration_ms}ms'
+    )
     print(log_entry)
 
     return response
