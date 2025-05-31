@@ -11,6 +11,7 @@ app = FastAPI()
 REDIS_URL=os.environ['REDIS_URL']
 REDIS_SOCKET_CONNECT_TIMEOUT = float(os.environ.get("REDIS_SOCKET_CONNECT_TIMEOUT") or '0')
 REDIS_SOCKET_TIMEOUT = float(os.environ.get("REDIS_SOCKET_TIMEOUT") or '0')
+ENTRY_EXPIRE_MINUTES=float(os.environ.get("ENTRY_EXPIRE_MINUTES") or '10')
 
 db = redis.from_url(REDIS_URL,
     socket_connect_timeout=REDIS_SOCKET_CONNECT_TIMEOUT or None,
@@ -53,7 +54,7 @@ async def update_world(world: int, request: Request, response: Response):
         'y': y,
         'time': current_unix_time
     }
-    db.set(world, json.dumps(redis_val), ex = 1 * 3600)
+    db.set(world, json.dumps(redis_val), ex = int(ENTRY_EXPIRE_MINUTES * 60))
     return redis_val
 
 @app.middleware("http")
